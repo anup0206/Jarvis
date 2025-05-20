@@ -1,3 +1,5 @@
+
+
 import speech_recognition as sr
 import pyttsx3
 import datetime
@@ -58,14 +60,26 @@ def main():
 
         if "jarvis" in word:
             speak("Yes, I'm listening.")
-            print("Jarvis Activated... Listening for command...")
+            print("\nJarvis Activated..... \nListening for command...\n")
 
             # Step 2: Listen for the command after wake word detected
             query = listen_for_command()
 
             if 'time' in query:
-                strTime = datetime.datetime.now().strftime("%H:%M")
-                speak(f"The time is {strTime}")
+                now = datetime.datetime.now()
+                hour = now.strftime("%I").lstrip('0')  # 12-hour format
+                minute = now.strftime("%M")
+                second = now.strftime("%S")
+                meridiem = now.strftime("%p")
+
+                if meridiem == "AM":
+                    period = "in the morning"
+                elif meridiem == "PM" and int(hour) < 6:
+                    period = "in the afternoon"
+                else:
+                    period = "in the evening"
+
+                speak(f"The clock now strikes {hour} {minute}, and {second} seconds {period}.")
 
             elif 'open google' in query:
                 speak("Opening Google")
@@ -84,8 +98,8 @@ def main():
                 webbrowser.open("https://www.kisskh.co")
 
             elif 'open linkedin' in query:
-                speak("Opening linkedin")
-                webbrowser.open("https://www.linkedin.co")
+                speak("Opening LinkedIn")
+                webbrowser.open("https://www.linkedin.com")
 
             elif 'exit' in query or 'see you' in query:
                 speak("Goodbye!")
