@@ -2,18 +2,16 @@ import speech_recognition as sr
 import pyttsx3
 import datetime
 import webbrowser
-import os
 
-# Initialize the speech engine
 engine = pyttsx3.init()
 
 def speak(text):
-    """Convert text to speech"""
+    """Convert text to speech — Jarvis talks"""
     engine.say(text)
     engine.runAndWait()
 
 def greet():
-    """Greet the user based on the current time"""
+    """Greet the user based on the time of day"""
     hour = datetime.datetime.now().hour
     if hour < 12:
         speak("Good morning!")
@@ -22,70 +20,79 @@ def greet():
     else:
         speak("Good evening!")
     speak("Initializing Jarvis...")
-def take_command():
-    """Listens for voice input and returns recognized text"""
-    r = sr.Recognizer()
 
+def listen_for_wake_word():
+    """Listen once for the wake word 'jarvis'"""
+    r = sr.Recognizer()
     try:
-        # First, listen for the wake word
         with sr.Microphone() as source:
             print("Listening for wake word...")
             r.pause_threshold = 1
-            audio = r.listen(source,timeout=2,phase_time_out=1)
-            word = r.recognize_google(audio)
-
-        # Checking the wake word 'jarvis'
-        if word.lower() == "jarvis":
-            speak("Yo")  # Speak AFTER releasing mic
-            print("\nJarvis Activated... Listening for command...\n")
-
-            # Listen again for the actual command
-            with sr.Microphone() as source:
-                r.pause_threshold = 1
-                audio = r.listen(source)
-                query = r.recognize_google(audio)
-                return query.lower()
-        else:
-            return ""  # Wake word not matched, return empty string
-
+            audio = r.listen(source)
+            word = r.recognize_google(audio).lower()
+            return word
     except Exception as e:
-        print("Sorry, I didn't catch that.")
-        return ""  # In case of error, return empty string
+        print(f"Error listening for wake word: {e}")
+        return ""
+
+def listen_for_command():
+    """Listen for the user's actual command after wake word"""
+    r = sr.Recognizer()
+    try:
+        with sr.Microphone() as source:
+            print("Listening for command...")
+            r.pause_threshold = 1
+            audio = r.listen(source)
+            command = r.recognize_google(audio).lower()
+            return command
+    except Exception as e:
+        print(f"Error listening for command: {e}")
+        return ""
 
 def main():
-    """Main function to run the assistant"""
     greet()
 
     while True:
-        query = take_command()
+        # Step 1: Listen for wake word
+        word = listen_for_wake_word()
 
-        if 'time' in query:
-            strTime = datetime.datetime.now().strftime("%H:%M")
-            speak(f"The time is {strTime}")
+        if "jarvis" in word:
+            speak("Yes, I'm listening.")
+            print("Jarvis Activated... Listening for command...")
 
-        elif 'open google' in query:
-            speak("Opening Google")
-            webbrowser.open("https://www.google.com")
+            # Step 2: Listen for the command after wake word detected
+            query = listen_for_command()
 
-        elif 'open facebook' in query:
-            speak("Opening Facebook")
-            webbrowser.open("https://www.facebook.com")
+            if 'time' in query:
+                strTime = datetime.datetime.now().strftime("%H:%M")
+                speak(f"The time is {strTime}")
 
-        elif 'open youtube' in query:
-            speak("Opening YouTube")
-            webbrowser.open("https://www.youtube.com")
+            elif 'open google' in query:
+                speak("Opening Google")
+                webbrowser.open("https://www.google.com")
 
-        elif 'anime' in query:
-            speak("Opening Anime")
-            webbrowser.open("https://www.kisskh.co")
+            elif 'open facebook' in query:
+                speak("Opening Facebook")
+                webbrowser.open("https://www.facebook.com")
 
-        elif 'exit' in query or 'quit' in query:
-            speak("Goodbye!")
-            break
+            elif 'open youtube' in query:
+                speak("Opening YouTube")
+                webbrowser.open("https://www.youtube.com")
 
-        elif query:
-            # If the query is not recognized
-            speak("I'm not sure how to help with that yet.")
+            elif 'open anime' in query:
+                speak("Opening Anime")
+                webbrowser.open("https://www.kisskh.co")
+
+            elif 'open linkedin' in query:
+                speak("Opening linkedin")
+                webbrowser.open("https://www.linkedin.co")
+
+            elif 'exit' in query or 'see you' in query:
+                speak("Goodbye!")
+                break
+
+            elif query:
+                speak("I'm not sure how to help with that yet.")
 
 if __name__ == "__main__":
     main()
