@@ -4,6 +4,7 @@ import speech_recognition as sr
 import pyttsx3
 import datetime
 import webbrowser
+import musicLibrary
 
 engine = pyttsx3.init()
 
@@ -28,7 +29,7 @@ def listen_for_wake_word():
     r = sr.Recognizer()
     try:
         with sr.Microphone() as source:
-            print("Listening for wake word...")
+            print("Listening ...")
             r.pause_threshold = 1
             audio = r.listen(source)
             word = r.recognize_google(audio).lower()
@@ -42,7 +43,7 @@ def listen_for_command():
     r = sr.Recognizer()
     try:
         with sr.Microphone() as source:
-            print("Listening for command...")
+            print("Recognizing......")
             r.pause_threshold = 1
             audio = r.listen(source)
             command = r.recognize_google(audio).lower()
@@ -60,7 +61,7 @@ def main():
 
         if "jarvis" in word:
             speak("Yes, I'm listening.")
-            print("\nJarvis Activated..... \nListening for command...\n")
+            # print("\nJarvis Activated..... \nListening for command...\n")
 
             # Step 2: Listen for the command after wake word detected
             query = listen_for_command()
@@ -100,6 +101,11 @@ def main():
             elif 'open linkedin' in query:
                 speak("Opening LinkedIn")
                 webbrowser.open("https://www.linkedin.com")
+
+            elif query.startswith("play"):
+                song = query.split(" ")[1]
+                link = musicLibrary.music[song]
+                webbrowser.open(link)
 
             elif 'exit' in query or 'see you' in query:
                 speak("Goodbye!")
