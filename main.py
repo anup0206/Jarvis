@@ -11,6 +11,10 @@ import asyncio  # For asynchronous programming (async/await)
 import subprocess  # To run external programs (mpv for audio playback)
 import edge_tts  # Microsoft neural text-to-speech engine
 from dotenv import load_dotenv  # Loads environment variables from a .env file
+from ai_module import aiProcess # for open ai 
+from news import get_news_headlines          # for newsapi 
+
+
 
 # Load environment variables from a .env file located in your project directory
 load_dotenv()
@@ -29,7 +33,7 @@ except Exception as e:
     client = None  # Disable AI processing if initialization fails
 
 # News API key for fetching current news headlines
-news_api = "0a0c53846b5b4868aa242fd20b606b48"  # Replace with your valid key or keep as is for demo
+news_api = "0a0c53846b5b4868aa242fd20b606b48"  
 
 # Function: Speak text out loud using Microsoft's neural voices via Edge-TTS
 async def speak(text, voice="en-US-GuyNeural"):
@@ -44,41 +48,6 @@ async def speak(text, voice="en-US-GuyNeural"):
         print(f"Speech error: {e}")
         print(f"Jarvis: {text}")  # Fallback to console if speech fails
 
-# Basic fallback AI responses when OpenAI is not available
-def get_fallback_response(command):
-    command = command.lower()
-    if "einstein" in command:
-        return "Albert Einstein was a theoretical physicist famous for the theory of relativity."
-    elif "newton" in command:
-        return "Isaac Newton formulated the laws of motion and gravity."
-    elif "tesla" in command:
-        return "Nikola Tesla contributed to the design of modern AC electricity."
-    elif "python" in command:
-        return "Python is a high-level programming language known for its simplicity."
-    elif "how are you" in command:
-        return "I'm functioning well, thank you!"
-    elif "what can you do" in command:
-        return "I can tell time, play music, open websites, and answer your questions."
-    else:
-        return "I'm in offline mode. I can still help with basic tasks."
-
-# Process user command with OpenAI GPT if available, else fallback
-def aiProcess(command):
-    if client:
-        try:
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are Jarvis, a helpful AI assistant."},
-                    {"role": "user", "content": command},
-                ],
-                temperature=0.6,
-                max_tokens=100,
-            )
-            return response.choices[0].message.content
-        except Exception as e:
-            print(f"OpenAI error: {e}")
-    return get_fallback_response(command)
 
 # Greet the user with appropriate message depending on time of day
 async def greet():
@@ -141,33 +110,6 @@ def open_website(url, site_name):
     except Exception as e:
         print(f"Failed to open {site_name}: {e}")
 
-# Fetch and speak the latest news headlines using NewsAPI
-async def get_news(country="us", limit=3):
-    """
-    Fetches the top headlines using NewsAPI and speaks them.
-    :param country: Country code for news (default: 'us')
-    :param limit: Number of top headlines to read out (default: 3)
-    """
-    try:
-        await speak(f"Fetching the latest {limit} news headlines from {country.upper()}...")
-        url = f"https://newsapi.org/v2/top-headlines?country={country}&apiKey={news_api}"
-        response = requests.get(url, timeout=10)
-
-        if response.status_code == 200:
-            data = response.json()
-            articles = data.get("articles", [])
-            if not articles:
-                await speak("I couldn't find any news articles at the moment.")
-            else:
-                for i, article in enumerate(articles[:limit], start=1):
-                    title = article.get("title", "No title")
-                    source = article.get("source", {}).get("name", "Unknown source")
-                    await speak(f"Headline {i}: {title} — from {source}")
-        else:
-            await speak(f"Failed to fetch news. Status code: {response.status_code}")
-    except Exception as e:
-        print(f"[News Error]: {e}")
-        await speak("There was a problem fetching the news.")
 
 # Main loop of Jarvis assistant
 async def main():
@@ -220,7 +162,10 @@ async def main():
                         await speak("Something went wrong while trying to play the song.")
 
                 elif "news" in query:
-                    await get_news()
+                        headlines = get_news_headlines(country="in", limit=3)
+                        for line in headlines:
+                            await speak(line)
+
 
                 elif "joke" in query:
                     await speak("Why did the programmer quit? Because he didn't get arrays!")
@@ -246,3 +191,6 @@ async def main():
 # Entry point for the program
 if __name__ == "__main__":
     asyncio.run(main())
+
+
+❯ git commit -m "seperate file for openai , newapi, minor change in main.py
