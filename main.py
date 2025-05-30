@@ -192,5 +192,3 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 
-
-❯ git commit -m "seperate file for openai , newapi, minor change in main.py
